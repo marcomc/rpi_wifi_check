@@ -40,8 +40,10 @@ lockfile='/var/run/WiFi_Check.pid'
 # Which Interface do you want to check/fix
 wlan='wlan0'
 IFCONFIG="/sbin/ifconfig"
+PING="/bin/ping"
 IFUP="/sbin/ifup"
 IFDOWN="/sbin/ifdown"
+A_PUBLIC_DNS=8.8.8.8 #we will test Google Public DNS
 ##################################################################
 echo
 echo "Starting WiFi check for $wlan"
@@ -68,7 +70,8 @@ echo $$ > $lockfile
 
 # We can perform check
 echo "Performing Network check for $wlan"
-if $IFCONFIG $wlan | grep -q "inet addr:" ; then
+if [ $PING -c 10 -W 5 $A_PUBLIC_DNS -q 2>&1 > /dev/null && $IFCONFIG $wlan | grep -q "inet addr:" ]; then
+# the WiFi network connectivity is verified by both the ability to ping a public DNS and the availability of an address for the wlan devices
     echo "Network is Okay"
 else
     echo "Network connection down! Attempting reconnection."
@@ -82,9 +85,13 @@ echo
 echo "Current Setting:"
 $IFCONFIG $wlan | grep "inet addr:"
 echo
- 
+
+sleep 3
+service avahi-daemon restart
+
 # Check is complete, Remove Lock file and exit
 #echo "process is complete, removing lockfile"
+
 rm $lockfile
 exit 0
 
