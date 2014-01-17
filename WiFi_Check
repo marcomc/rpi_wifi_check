@@ -41,6 +41,7 @@ lockfile='/var/run/WiFi_Check.pid'
 wlan='wlan0'
 IFCONFIG="/sbin/ifconfig"
 PING="/bin/ping"
+SERVICE="/usr/sbin/service"
 IFUP="/sbin/ifup"
 IFDOWN="/sbin/ifdown"
 A_PUBLIC_DNS=8.8.8.8 #we will test Google Public DNS
@@ -87,7 +88,7 @@ $IFCONFIG $wlan | grep "inet addr:"
 echo
 
 sleep 3
-service avahi-daemon restart
+$SERVICE avahi-daemon restart
 
 # Check is complete, Remove Lock file and exit
 #echo "process is complete, removing lockfile"
