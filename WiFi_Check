@@ -69,13 +69,14 @@ fi
 #echo "Setting Lockfile"
 echo $$ > $lockfile
 
-# We can perform check
+# The WiFi network connectivity is verified by both the ability to ping a public DNS
+# and the availability of an address for the wlan devices
 echo "Performing Network check for $wlan"
-if [ $PING -c 10 -W 5 $A_PUBLIC_DNS -q 2>&1 > /dev/null && $IFCONFIG $wlan | grep -q "inet addr:" ]; then
-# the WiFi network connectivity is verified by both the ability to ping a public DNS and the availability of an address for the wlan devices
+if $IFCONFIG $wlan | grep -q "inet addr:" && $PING -c 10 -W 5 $A_PUBLIC_DNS -q 2>&1 > /dev/null
+then
     echo "Network is Okay"
 else
-    echo "Network connection down! Attempting reconnection."
+  echo "Network connection down! Attempting reconnection."
     $IFDOWN $wlan
     sleep 5
     $IFUP --force $wlan
@@ -87,11 +88,12 @@ echo "Current Setting:"
 $IFCONFIG $wlan | grep "inet addr:"
 echo
 
+# The Avahi daemon, responsible for the Bonjour broadcasting unexpectedly fails very frequently
+# So we will relaod it at every netwirk check
 sleep 3
 $SERVICE avahi-daemon restart
 
 # Check is complete, Remove Lock file and exit
-#echo "process is complete, removing lockfile"
 
 rm $lockfile
 exit 0
